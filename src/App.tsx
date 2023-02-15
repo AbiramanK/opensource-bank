@@ -1,3 +1,4 @@
+import { SnackbarProvider } from "notistack";
 import React from "react";
 import {
   createBrowserRouter,
@@ -23,7 +24,9 @@ export interface IAppProps {}
 export default function App(props: IAppProps) {
   return (
     <React.Fragment>
-      <RouterProvider router={router} />
+      <SnackbarProvider maxSnack={3}>
+        <RouterProvider router={router} />
+      </SnackbarProvider>
     </React.Fragment>
   );
 }
