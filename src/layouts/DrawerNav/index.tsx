@@ -7,7 +7,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Link,
+  Tooltip,
 } from "@mui/material";
 import {
   Dashboard as DashboardIcon,
@@ -67,16 +67,22 @@ export interface IDrawerListItemProps {
 const DrawerListItem = (props: IDrawerListItemProps) => {
   return (
     <React.Fragment>
-      <ListItemButton
+      <Tooltip
         key={props?.id}
-        selected={props?.selected === props?.id}
-        LinkComponent={"a"}
-        href={`${props?.link}`}
+        title={`${props?.title}`}
+        placement="right-start"
       >
-        {props?.leftIcon && <ListItemIcon>{props?.leftIcon}</ListItemIcon>}
-        <ListItemText primary={props?.title} />
-        {props?.rightIcon && <ListItemIcon>{props?.rightIcon}</ListItemIcon>}
-      </ListItemButton>
+        <ListItemButton
+          key={props?.id}
+          selected={props?.selected === props?.id}
+          LinkComponent={"a"}
+          href={`${props?.link}`}
+        >
+          {props?.leftIcon && <ListItemIcon>{props?.leftIcon}</ListItemIcon>}
+          <ListItemText primary={props?.title} />
+          {props?.rightIcon && <ListItemIcon>{props?.rightIcon}</ListItemIcon>}
+        </ListItemButton>
+      </Tooltip>
     </React.Fragment>
   );
 };
