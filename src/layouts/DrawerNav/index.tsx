@@ -13,6 +13,7 @@ import {
   Dashboard as DashboardIcon,
   ChevronLeft,
   Group,
+  AccountBalance,
 } from "@mui/icons-material";
 
 import { Title } from "../../components";
@@ -38,6 +39,12 @@ const mainListItems: MainListItemInterface[] = [
     title: "Customers",
     link: "/customers",
     leftIcon: <Group />,
+  },
+  {
+    id: "accounts",
+    title: "Accounts",
+    link: "/accounts",
+    leftIcon: <AccountBalance />,
   },
 ];
 
@@ -67,7 +74,7 @@ const DrawerListItem = (props: IDrawerListItemProps) => {
   );
 };
 
-export type DrawerItemSelected = "dashboard" | "customers";
+export type DrawerItemSelected = "dashboard" | "customers" | "accounts";
 
 export interface IDrawerNavProps {
   open?: boolean;
@@ -101,6 +108,7 @@ export default function DrawerNav(props: IDrawerNavProps) {
         <List component="nav">
           {mainListItems?.map((item: MainListItemInterface, index: number) => (
             <DrawerListItem
+              key={index}
               id={item?.id}
               title={item?.title}
               link={item?.link}
