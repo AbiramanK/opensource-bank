@@ -14,13 +14,14 @@ import {
   ChevronLeft,
   Group,
   AccountBalance,
+  ReceiptLong,
 } from "@mui/icons-material";
 
 import { Title } from "../../components";
 import { MuiDrawerNav } from "./MuiDrawerNav";
 
 export interface MainListItemInterface {
-  id: string;
+  id: DrawerItemSelectedType;
   title: string;
   link: string;
   leftIcon?: React.ReactNode;
@@ -45,6 +46,12 @@ const mainListItems: MainListItemInterface[] = [
     title: "Accounts",
     link: "/accounts",
     leftIcon: <AccountBalance />,
+  },
+  {
+    id: "transactions",
+    title: "Transactions",
+    link: "/transactions",
+    leftIcon: <ReceiptLong />,
   },
 ];
 
@@ -74,13 +81,17 @@ const DrawerListItem = (props: IDrawerListItemProps) => {
   );
 };
 
-export type DrawerItemSelected = "dashboard" | "customers" | "accounts";
+export type DrawerItemSelectedType =
+  | "dashboard"
+  | "customers"
+  | "accounts"
+  | "transactions";
 
 export interface IDrawerNavProps {
   open?: boolean;
   drawerWidth?: number;
   toggleDrawer: Function;
-  selcted: DrawerItemSelected;
+  selcted: DrawerItemSelectedType;
 }
 
 export default function DrawerNav(props: IDrawerNavProps) {

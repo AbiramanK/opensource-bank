@@ -7,7 +7,14 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-import { Account, Customer, Dashboard, Login, Register } from "src/screens";
+import {
+  Account,
+  Customer,
+  Dashboard,
+  Login,
+  Register,
+  Transaction,
+} from "src/screens";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -17,6 +24,7 @@ const router = createBrowserRouter(
       <Route path="/register" element={<Register />}></Route>
       <Route path="/customers" element={<Customer />}></Route>
       <Route path="/accounts" element={<Account />}></Route>
+      <Route path="/transactions" element={<Transaction />}></Route>
     </Route>
   )
 );

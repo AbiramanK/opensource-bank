@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { ApplicationBar, BaseLayout, DrawerNav, Main } from "src/layouts";
-import { DrawerItemSelected } from "./DrawerNav";
+import { DrawerItemSelectedType } from "./DrawerNav";
 
 const drawerWidth: number = 240;
 
 export interface IAppLayoutProps {
   children: React.ReactNode;
-  drawerSelected: DrawerItemSelected;
+  drawerSelected: DrawerItemSelectedType;
   title: string;
 }
 
