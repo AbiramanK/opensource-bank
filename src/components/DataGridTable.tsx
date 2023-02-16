@@ -36,6 +36,7 @@ export default function DataGridTable(props: IDataGridTableProps) {
           paginationMode={"client"}
           loading={props?.loading}
           onRowClick={handleRowClickEvent}
+          sx={{ p: 2 }}
         />
       </Box>
     </React.Fragment>
