@@ -15,6 +15,7 @@ export interface IApplicationBarProps {
   logout: Function;
   firstName: string;
   lastName: string;
+  title: string;
 }
 
 export default function ApplicationBar(props: IApplicationBarProps) {
@@ -53,7 +54,7 @@ export default function ApplicationBar(props: IApplicationBarProps) {
             noWrap
             sx={{ flexGrow: 1 }}
           >
-            Dashboard
+            {props?.title}
           </Typography>
           <IconButton color="inherit">
             <Badge badgeContent={4} color="secondary">

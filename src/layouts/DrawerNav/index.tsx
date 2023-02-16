@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import {
   Toolbar,
   IconButton,
@@ -7,27 +7,73 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Link,
 } from "@mui/material";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import {
+  Dashboard as DashboardIcon,
+  ChevronLeft,
+  Group,
+} from "@mui/icons-material";
+
 import { Title } from "../../components";
 import { MuiDrawerNav } from "./MuiDrawerNav";
-import { Dashboard as DashboardIcon } from "@mui/icons-material";
 
-const mainListItems = (
-  <React.Fragment>
-    <ListItemButton>
-      <ListItemIcon>
-        <DashboardIcon />
-      </ListItemIcon>
-      <ListItemText primary="Dashboard" />
-    </ListItemButton>
-  </React.Fragment>
-);
+export interface MainListItemInterface {
+  id: string;
+  title: string;
+  link: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+}
+
+const mainListItems: MainListItemInterface[] = [
+  {
+    id: "dashboard",
+    title: "Dashboard",
+    link: "/",
+    leftIcon: <DashboardIcon />,
+  },
+  {
+    id: "customers",
+    title: "Customers",
+    link: "/customers",
+    leftIcon: <Group />,
+  },
+];
+
+export interface IDrawerListItemProps {
+  id: string;
+  title: string;
+  link: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  selected?: string;
+}
+
+const DrawerListItem = (props: IDrawerListItemProps) => {
+  return (
+    <React.Fragment>
+      <ListItemButton
+        key={props?.id}
+        selected={props?.selected === props?.id}
+        LinkComponent={"a"}
+        href={`${props?.link}`}
+      >
+        {props?.leftIcon && <ListItemIcon>{props?.leftIcon}</ListItemIcon>}
+        <ListItemText primary={props?.title} />
+        {props?.rightIcon && <ListItemIcon>{props?.rightIcon}</ListItemIcon>}
+      </ListItemButton>
+    </React.Fragment>
+  );
+};
+
+export type DrawerItemSelected = "dashboard" | "customers";
 
 export interface IDrawerNavProps {
   open?: boolean;
   drawerWidth?: number;
   toggleDrawer: Function;
+  selcted: DrawerItemSelected;
 }
 
 export default function DrawerNav(props: IDrawerNavProps) {
@@ -48,11 +94,22 @@ export default function DrawerNav(props: IDrawerNavProps) {
         >
           <Title titleProps={{ marginBottom: 0 }}>Opensource Bank</Title>
           <IconButton onClick={() => props?.toggleDrawer()}>
-            <ChevronLeftIcon />
+            <ChevronLeft />
           </IconButton>
         </Toolbar>
         <Divider />
-        <List component="nav">{mainListItems}</List>
+        <List component="nav">
+          {mainListItems?.map((item: MainListItemInterface, index: number) => (
+            <DrawerListItem
+              id={item?.id}
+              title={item?.title}
+              link={item?.link}
+              leftIcon={item?.leftIcon}
+              rightIcon={item?.rightIcon}
+              selected={props?.selcted}
+            />
+          ))}
+        </List>
       </MuiDrawerNav>
     </React.Fragment>
   );
