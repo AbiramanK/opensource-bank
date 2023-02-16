@@ -13,7 +13,7 @@ import { Cancel, CheckCircle } from "@mui/icons-material";
 const columns: GridColDef[] = [
   {
     field: "id",
-    headerName: "Id",
+    headerName: "ID",
     width: 50,
     valueGetter: (params: GridValueGetterParams) => `${params?.row?.id ?? "-"}`,
   },
