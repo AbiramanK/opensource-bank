@@ -1,4 +1,5 @@
-import Dashboard from "./Dashboard";
 import { Login, Register } from "./auth";
+import Customer from "./Customer";
+import Dashboard from "./Dashboard";
 
-export { Dashboard, Login, Register };
+export { Dashboard, Login, Register, Customer };
