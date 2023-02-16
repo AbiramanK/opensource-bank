@@ -1,6 +1,11 @@
-import React, { useState } from "react";
-import { ApplicationBar, BaseLayout, DrawerNav, Main } from "src/layouts";
+import React, { useState, Suspense, lazy } from "react";
+
 import { DrawerItemSelectedType } from "./DrawerNav";
+
+const ApplicationBar = lazy(() => import("src/layouts/ApplicationBar"));
+const BaseLayout = lazy(() => import("src/layouts/BaseLayout"));
+const DrawerNav = lazy(() => import("src/layouts/DrawerNav"));
+const Main = lazy(() => import("src/layouts/Main"));
 
 const drawerWidth: number = 240;
 
@@ -21,24 +26,26 @@ export default function AppLayout(props: IAppLayoutProps) {
 
   return (
     <React.Fragment>
-      <BaseLayout>
-        <ApplicationBar
-          open={open}
-          drawerWidth={drawerWidth}
-          toggleDrawer={toggleDrawer}
-          logout={logout}
-          firstName={"FirstName"}
-          lastName={"LastName"}
-          title={props?.title}
-        />
-        <DrawerNav
-          open={open}
-          drawerWidth={drawerWidth}
-          toggleDrawer={toggleDrawer}
-          selcted={props?.drawerSelected}
-        />
-        <Main>{props?.children}</Main>
-      </BaseLayout>
+      <Suspense>
+        <BaseLayout>
+          <ApplicationBar
+            open={open}
+            drawerWidth={drawerWidth}
+            toggleDrawer={toggleDrawer}
+            logout={logout}
+            firstName={"FirstName"}
+            lastName={"LastName"}
+            title={props?.title}
+          />
+          <DrawerNav
+            open={open}
+            drawerWidth={drawerWidth}
+            toggleDrawer={toggleDrawer}
+            selcted={props?.drawerSelected}
+          />
+          <Main>{props?.children}</Main>
+        </BaseLayout>
+      </Suspense>
     </React.Fragment>
   );
 }
