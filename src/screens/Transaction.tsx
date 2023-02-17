@@ -23,7 +23,9 @@ import {
   useGetTransactionsQuery,
 } from "src/graphql-codegen/graphql";
 import { useSnackbar } from "notistack";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useApolloClient } from "@apollo/client";
+import { useAuth } from "src/RootRouter";
 
 const columns: GridColDef[] = [
   {
@@ -121,6 +123,9 @@ export interface ITransactionProps {}
 export default function Transaction(props: ITransactionProps) {
   const { enqueueSnackbar } = useSnackbar();
   const location = useLocation();
+  const navigate = useNavigate();
+  const client = useApolloClient();
+  const auth = useAuth();
 
   const {
     id,
@@ -139,7 +144,21 @@ export default function Transaction(props: ITransactionProps) {
 
   const handleOnRowClickEvent = (row: TransactionModel) => {};
 
+  const logout = () => {
+    client?.clearStore();
+    auth?.logout(() => navigate("/login"));
+  };
+
+  const handleErrors = (message: string) => {
+    if (message === "jwt expired" || "jwt must be provided") {
+      enqueueSnackbar("User session has expired, Please login again.");
+
+      logout();
+    }
+  };
+
   if (error) {
+    handleErrors(error?.message);
     enqueueSnackbar(error?.message, { variant: "error" });
   }
 

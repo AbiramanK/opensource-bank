@@ -32,6 +32,7 @@ import {
   useUpdateBankAccountStatusMutation,
 } from "src/graphql-codegen/graphql";
 import { useAuth } from "src/RootRouter";
+import { useApolloClient } from "@apollo/client";
 
 export type AccountStatusTypes =
   | "pre-active"
@@ -218,6 +219,7 @@ export default function Account(props: IAccountProps) {
   const location = useLocation();
   const auth = useAuth();
   const navigate = useNavigate();
+  const client = useApolloClient();
 
   const {
     first_name,
@@ -276,11 +278,26 @@ export default function Account(props: IAccountProps) {
     });
   };
 
+  const logout = () => {
+    client?.clearStore();
+    auth?.logout(() => navigate("/login"));
+  };
+
+  const handleErrors = (message: string) => {
+    if (message === "jwt expired" || "jwt must be provided") {
+      enqueueSnackbar("User session has expired, Please login again.");
+
+      logout();
+    }
+  };
+
   if (error) {
+    handleErrors(error?.message);
     enqueueSnackbar(error?.message, { variant: "error" });
   }
 
   if (result?.error) {
+    handleErrors(result?.error?.message);
     enqueueSnackbar(result?.error?.message, { variant: "error" });
   }
 

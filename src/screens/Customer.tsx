@@ -12,6 +12,8 @@ import { Cancel, CheckCircle } from "@mui/icons-material";
 import { useGetAllUsersQuery, UserModel } from "src/graphql-codegen/graphql";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
+import { useApolloClient } from "@apollo/client";
+import { useAuth } from "src/RootRouter";
 
 const columns: GridColDef[] = [
   {
@@ -81,6 +83,8 @@ export interface ICustomerProps {}
 export default function Customer(props: ICustomerProps) {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
+  const client = useApolloClient();
+  const auth = useAuth();
 
   const { data, loading, error } = useGetAllUsersQuery();
 
@@ -98,7 +102,21 @@ export default function Customer(props: ICustomerProps) {
     });
   };
 
+  const logout = () => {
+    client?.clearStore();
+    auth?.logout(() => navigate("/login"));
+  };
+
+  const handleErrors = (message: string) => {
+    if (message === "jwt expired" || "jwt must be provided") {
+      enqueueSnackbar("User session has expired, Please login again.");
+
+      logout();
+    }
+  };
+
   if (error) {
+    handleErrors(error?.message);
     enqueueSnackbar(error?.message, { variant: "error" });
   }
 
