@@ -221,16 +221,7 @@ export default function Account(props: IAccountProps) {
   const navigate = useNavigate();
   const client = useApolloClient();
 
-  const {
-    first_name,
-    last_name,
-    email,
-    id,
-    user_name,
-    mobile_number,
-    address,
-    number_of_accounts,
-  } = location?.state as UserModel;
+  const routeState = location?.state as UserModel | null;
 
   const [getBankAccounts, { data, loading, error }] =
     useGetBankAccountsLazyQuery();
@@ -260,7 +251,11 @@ export default function Account(props: IAccountProps) {
     var userId = undefined;
 
     if (auth?.user?.type === "banker") {
-      userId = id;
+      userId = routeState?.id;
+    }
+
+    if (auth?.user?.type === "banker" && routeState === null) {
+      return;
     }
 
     getBankAccounts({
