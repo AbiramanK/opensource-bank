@@ -161,6 +161,8 @@ export default function Dashboard(props: IDashboardProps) {
 
   useEffect(() => {
     if (createdResult?.data) {
+      enqueueSnackbar("Bank account created success", { variant: "success" });
+      createdResult?.reset();
       getCustomerAccounts(auth?.user?.id!);
     }
   }, [createdResult?.data]);
@@ -266,11 +268,6 @@ export default function Dashboard(props: IDashboardProps) {
   if (createdResult?.error) {
     handleErrors(createdResult?.error?.message);
     enqueueSnackbar(createdResult?.error?.message, { variant: "error" });
-    createdResult?.reset();
-  }
-
-  if (createdResult?.data!) {
-    enqueueSnackbar("Bank account created success", { variant: "success" });
     createdResult?.reset();
   }
 
