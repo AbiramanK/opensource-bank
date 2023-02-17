@@ -15,6 +15,7 @@ query GetBankAccounts($user_id: Float) {
     createdAt
     updatedAt
     userId
+    balance
     user {
       address
       created_at
