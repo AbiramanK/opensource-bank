@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   GridColDef,
   GridRenderCellParams,
@@ -20,6 +20,7 @@ import moment from "moment";
 import {
   AccountModel,
   TransactionModel,
+  useGetTransactionsLazyQuery,
   useGetTransactionsQuery,
 } from "src/graphql-codegen/graphql";
 import { useSnackbar } from "notistack";
@@ -127,20 +128,20 @@ export default function Transaction(props: ITransactionProps) {
   const client = useApolloClient();
   const auth = useAuth();
 
-  const {
-    id,
-    account_number,
-    daily_transaction_limit,
-    status,
-    user,
-    created_at,
-  } = location?.state as AccountModel;
+  const routeState = location?.state as AccountModel;
 
-  const { data, loading, error } = useGetTransactionsQuery({
-    variables: {
-      accountId: id,
-    },
+  useEffect(() => {
+    if (routeState !== null) {
+      getTransactions({
+        variables: {
+          accountId: routeState?.id,
+        },
+      });
+    }
   });
+
+  const [getTransactions, { data, loading, error }] =
+    useGetTransactionsLazyQuery();
 
   const handleOnRowClickEvent = (row: TransactionModel) => {};
 
