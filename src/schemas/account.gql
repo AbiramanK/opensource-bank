@@ -40,21 +40,6 @@ mutation CreateBankAccount {
     dailyTransactionLimit
     id
     status
-    user {
-      address
-      created_at
-      deleted_at
-      email
-      first_name
-      id
-      is_active
-      last_name
-      mobile_number
-      number_of_accounts
-      type
-      updated_at
-      user_name
-    }
   }
 }
 
