@@ -1,7 +1,18 @@
-import React, { useState } from "react";
-import { Container, Grid } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  SelectChangeEvent,
+  TextField,
+} from "@mui/material";
 import { AppLayout } from "src/layouts";
-import { DashboardItem } from "src/components";
+import { DashboardItem, SelectComponent } from "src/components";
 import {
   AccountBalance,
   AccountBalanceWallet,
@@ -10,8 +21,17 @@ import {
   ReceiptLong,
 } from "@mui/icons-material";
 import { IDashboardItemProps } from "src/components/DashboardItem";
-import { IDrawerListItemProps } from "src/layouts/DrawerNav";
 import { useAuth } from "src/RootRouter";
+import {
+  GetBankAccountOutput,
+  useDeopsitMutation,
+  useGetBankAccountsLazyQuery,
+  useWithdrawMutation,
+} from "src/graphql-codegen/graphql";
+import { SelectComponentOptionsInterface } from "src/components/SelectComponent";
+import { useApolloClient } from "@apollo/client";
+import { useSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
 
 const drawerWidth: number = 240;
 
@@ -19,6 +39,9 @@ export interface IDashboardProps {}
 
 export default function Dashboard(props: IDashboardProps) {
   const auth = useAuth();
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   const baseList: IDashboardItemProps[] = [
     {
@@ -62,9 +85,164 @@ export default function Dashboard(props: IDashboardProps) {
           ...baseList,
         ];
 
+  const [getBankAccounts, accounts] = useGetBankAccountsLazyQuery();
+  const [deposit, depositResult] = useDeopsitMutation();
+  const [withdraw, withdrawResult] = useWithdrawMutation();
+
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [accountSelectOptions, setAccountSelectOptions] =
+    useState<SelectComponentOptionsInterface[]>();
+  const [selectedAccount, setSelectedAccount] = useState<string>();
+  const [balance, setBalance] = useState<number>();
+  const [amount, setAmount] = useState<number>();
+  const [type, setType] = useState<"deposit" | "withdraw">();
+
+  useEffect(() => {
+    if (auth?.user?.type === "customer") {
+      getCustomerAccounts(auth?.user?.id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (accounts?.data) {
+      const options: SelectComponentOptionsInterface[] =
+        accounts?.data?.get_bank_accounts?.map(
+          (
+            account: GetBankAccountOutput,
+            index: number
+          ): SelectComponentOptionsInterface => {
+            return {
+              id: account?.id?.toString(),
+              label: `${account?.id} - ${account?.accountNumber}`,
+              disabled: false,
+            };
+          }
+        );
+
+      setAccountSelectOptions(options);
+    }
+  }, [accounts?.data]);
+
+  useEffect(() => {
+    if (selectedAccount) {
+      accounts?.data?.get_bank_accounts?.map(
+        (account: GetBankAccountOutput, index: number) => {
+          if (account?.id?.toString() === selectedAccount) {
+            setBalance(account?.balance);
+            return;
+          }
+        }
+      );
+    }
+  }, [selectedAccount]);
+
+  useEffect(() => {
+    if (depositResult?.data) {
+      enqueueSnackbar("Deposit success", { variant: "success" });
+      getCustomerAccounts(auth?.user?.id!);
+    }
+  }, [depositResult?.data]);
+
+  useEffect(() => {
+    if (withdrawResult?.data) {
+      enqueueSnackbar("Withdraw success", { variant: "success" });
+      getCustomerAccounts(auth?.user?.id!);
+    }
+  }, [withdrawResult?.data]);
+
   const handleAction = (id: string) => {
-    console.log("action id: ", id);
+    if (id === "deposit") {
+      setType("deposit");
+    }
+
+    if (id === "withdraw") {
+      setType("withdraw");
+    }
+
+    setDialogOpen(true);
   };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
+  const handleAccountChange = (event: SelectChangeEvent) => {
+    setSelectedAccount(event?.target?.value);
+  };
+
+  const getCustomerAccounts = (user_id: number) => {
+    getBankAccounts({
+      variables: {
+        user_id,
+      },
+    });
+  };
+
+  const logout = () => {
+    client?.clearStore();
+    auth?.logout(() => navigate("/login"));
+  };
+
+  const handleErrors = (message: string) => {
+    if (message === "jwt expired" || message === "jwt must be provided") {
+      enqueueSnackbar("User session has expired, Please login again.");
+
+      logout();
+    }
+  };
+
+  const handleDialogAction = () => {
+    if (selectedAccount && amount) {
+      if (type === "deposit") {
+        deposit({
+          variables: {
+            input: {
+              accountId: parseInt(selectedAccount!),
+              amount,
+            },
+          },
+        });
+      }
+
+      if (type === "withdraw") {
+        withdraw({
+          variables: {
+            input: {
+              accountId: parseInt(selectedAccount!),
+              amount,
+            },
+          },
+        });
+      }
+
+      setSelectedAccount(undefined);
+      setAmount(undefined);
+      setBalance(undefined);
+      setType(undefined);
+
+      setDialogOpen(false);
+    } else {
+      enqueueSnackbar("Please fill all the required fields", {
+        variant: "info",
+      });
+    }
+  };
+
+  if (accounts?.error) {
+    handleErrors(accounts?.error?.message);
+  }
+
+  if (depositResult?.error) {
+    handleErrors(depositResult?.error?.message);
+    enqueueSnackbar(depositResult?.error?.message, { variant: "error" });
+    depositResult?.reset();
+  }
+
+  if (withdrawResult?.error) {
+    handleErrors(withdrawResult?.error?.message);
+    enqueueSnackbar(withdrawResult?.error?.message, { variant: "error" });
+    withdrawResult?.reset();
+  }
 
   return (
     <React.Fragment>
@@ -91,6 +269,46 @@ export default function Dashboard(props: IDashboardProps) {
             })}
           </Grid>
         </Container>
+        <Dialog open={dialogOpen} onClose={handleDialogClose} fullWidth={true}>
+          <DialogTitle>{`${type?.charAt(0).toUpperCase()}${type?.slice(
+            1
+          )}`}</DialogTitle>
+          <DialogContentText sx={{ pl: 3 }} variant="h6">
+            Balance: {balance}
+          </DialogContentText>
+          <DialogContent>
+            <SelectComponent
+              required
+              id="account"
+              label="Account"
+              size="small"
+              value={selectedAccount}
+              handleChange={handleAccountChange}
+              options={accountSelectOptions}
+              minWidth={300}
+            />
+            <TextField
+              required
+              autoFocus
+              margin="dense"
+              id="amount"
+              label="Amount"
+              type="number"
+              fullWidth
+              variant="standard"
+              sx={{ mt: 3 }}
+              onChange={(
+                event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+              ) => {
+                setAmount(parseInt(event?.target?.value));
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDialogClose}>Cancel</Button>
+            <Button onClick={handleDialogAction}>{type!}</Button>
+          </DialogActions>
+        </Dialog>
       </AppLayout>
     </React.Fragment>
   );
