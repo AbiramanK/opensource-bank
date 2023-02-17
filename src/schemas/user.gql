@@ -1,0 +1,75 @@
+query GetAllUsers {
+  get_all_users {
+    address
+    created_at
+    deleted_at
+    email
+    first_name
+    id
+    is_active
+    last_name
+    mobile_number
+    number_of_accounts
+    type
+    updated_at
+    user_name
+  }
+}
+
+query GetAllUsersWithBankAccounts {
+  get_all_users_with_bank_accounts {
+    accounts {
+      account_number
+      daily_transaction_limit
+      id
+      status
+      created_at
+      updated_at
+    }
+    address
+    created_at
+    deleted_at
+    email
+    first_name
+    id
+    is_active
+    last_name
+    mobile_number
+    number_of_accounts
+    type
+    updated_at
+    user_name
+  }
+}
+
+mutation Login($input: LoginInput!) {
+  login(input: $input) {
+    address
+    email
+    firstName
+    id
+    isActive
+    lastName
+    mobileNumber
+    numberOfAccounts
+    token
+    type
+    userName
+  }
+}
+
+mutation Register($input: RegistrationInput!) {
+  register(input: $input) {
+    address
+    email
+    firstName
+    id
+    isActive
+    lastName
+    mobileNumber
+    numberOfAccounts
+    token
+    type
+    userName
+  }
+}

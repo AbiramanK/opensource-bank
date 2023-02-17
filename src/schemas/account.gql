@@ -1,0 +1,62 @@
+query GetBankAccountBalance($accounts: [GetBankAccountBalanceInput!]!) {
+  get_bank_account_balace(accounts: $accounts) {
+    accountId
+    balance
+  }
+}
+
+query GetBankAccounts($user_id: Float) {
+  get_bank_accounts(user_id: $user_id) {
+    accountNumber
+    createdAt
+    dailyTransactionLimit
+    id
+    status
+    createdAt
+    updatedAt
+    userId
+    user {
+      address
+      created_at
+      deleted_at
+      email
+      first_name
+      id
+      is_active
+      last_name
+      mobile_number
+      number_of_accounts
+      type
+      updated_at
+      user_name
+    }
+  }
+}
+
+mutation CreateBankAccount {
+  create_bank_account {
+    accountNumber
+    dailyTransactionLimit
+    id
+    status
+    user {
+      address
+      created_at
+      deleted_at
+      email
+      first_name
+      id
+      is_active
+      last_name
+      mobile_number
+      number_of_accounts
+      type
+      updated_at
+      user_name
+    }
+  }
+}
+
+mutation UpdateBankAccountStatus($input: ActivateBankAccountInput!) {
+  update_bank_account_status(input: $input)
+}

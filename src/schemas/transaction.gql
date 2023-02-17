@@ -1,0 +1,101 @@
+query GetTransactions($accountId: Float!) {
+  get_transactions(accountId: $accountId) {
+    account_id
+    amount
+    created_at
+    deleted_at
+    id
+    status
+    type
+    updated_at
+    account {
+      account_number
+      daily_transaction_limit
+      id
+      status
+      user {
+        address
+        created_at
+        deleted_at
+        email
+        first_name
+        id
+        is_active
+        last_name
+        mobile_number
+        number_of_accounts
+        type
+        updated_at
+        user_name
+      }
+    }
+  }
+}
+
+mutation Deopsit($input: TransactionInput!) {
+  deposit(input: $input) {
+    account_id
+    amount
+    created_at
+    deleted_at
+    id
+    status
+    type
+    updated_at
+    account {
+      account_number
+      daily_transaction_limit
+      id
+      status
+      user {
+        address
+        created_at
+        deleted_at
+        email
+        first_name
+        id
+        is_active
+        last_name
+        mobile_number
+        number_of_accounts
+        type
+        updated_at
+        user_name
+      }
+    }
+  }
+}
+
+mutation Withdraw($input: TransactionInput!) {
+  withdraw(input: $input) {
+    account_id
+    amount
+    created_at
+    deleted_at
+    id
+    status
+    type
+    updated_at
+    account {
+      account_number
+      daily_transaction_limit
+      id
+      status
+      user {
+        address
+        created_at
+        deleted_at
+        email
+        first_name
+        id
+        is_active
+        last_name
+        mobile_number
+        number_of_accounts
+        type
+        updated_at
+        user_name
+      }
+    }
+  }
+}
