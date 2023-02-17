@@ -16,13 +16,22 @@ import { useSnackbar } from "notistack";
 
 import Layout from "./Layout";
 import { convertFormDataEntryValueToString } from "src/utilities";
+import { useRegisterMutation } from "src/graphql-codegen/graphql";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "src/RootRouter";
 
 export interface IRegisterProps {}
 
 export default function Register(props: IRegisterProps) {
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const location = useLocation();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const from = location.state?.from?.pathname || "/";
+
+  const [register, { data, loading, error }] = useRegisterMutation();
+
   const [designation, setDesignation] = React.useState("");
 
   const handleDesignationChange = (event: SelectChangeEvent) => {
@@ -36,12 +45,16 @@ export default function Register(props: IRegisterProps) {
 
     const firstName = convertFormDataEntryValueToString(data.get("firstName"));
     const lastName = convertFormDataEntryValueToString(data.get("lastName"));
-    const username = convertFormDataEntryValueToString(data.get("userName"));
+    const username = convertFormDataEntryValueToString(data.get("username"));
     const email = convertFormDataEntryValueToString(data.get("email"));
     const password = convertFormDataEntryValueToString(data.get("password"));
     const designation = convertFormDataEntryValueToString(
       data.get("designation")
     );
+    const mobileNumber = convertFormDataEntryValueToString(
+      data.get("mobileNumber")
+    );
+    const address = convertFormDataEntryValueToString(data.get("address"));
 
     if (
       firstName !== "" &&
@@ -51,12 +64,37 @@ export default function Register(props: IRegisterProps) {
       password !== "" &&
       designation !== ""
     ) {
+      register({
+        variables: {
+          input: {
+            email,
+            firstName,
+            lastName,
+            password,
+            userName: username,
+            type: designation,
+            address,
+            mobileNumber,
+          },
+        },
+      });
     } else {
       enqueueSnackbar("Please fill all the required fields", {
         variant: "info",
       });
     }
   };
+
+  if (error) {
+    enqueueSnackbar(error?.message, { variant: "error" });
+  }
+
+  if (data! && !auth?.user) {
+    enqueueSnackbar("Logged in successfully", { variant: "success" });
+    auth.login(data!?.register!, () => {
+      navigate(from, { replace: true });
+    });
+  }
 
   return (
     <Layout
@@ -118,6 +156,26 @@ export default function Register(props: IRegisterProps) {
             type="password"
             id="password"
             autoComplete="new-password"
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            name="mobileNumber"
+            label="mobileNumber"
+            type="mobileNumber"
+            id="mobileNumber"
+            autoComplete="new-mobileNumber"
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            name="address"
+            label="address"
+            type="address"
+            id="address"
+            autoComplete="new-address"
           />
         </Grid>
         <Grid item xs={12}>
