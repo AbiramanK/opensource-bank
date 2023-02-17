@@ -1,16 +1,24 @@
 import React, { useState } from "react";
 import { TextField, FormControlLabel, Checkbox, Grid } from "@mui/material";
 import { useSnackbar } from "notistack";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import Layout from "./Layout";
 import { convertFormDataEntryValueToString } from "src/utilities";
+import { useLoginMutation } from "src/graphql-codegen/graphql";
+import { useAuth } from "src/RootRouter";
 
 export interface ILoginProps {}
 
 export default function Login(props: ILoginProps) {
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const auth = useAuth();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const from = location.state?.from?.pathname || "/";
+
+  const [login, { data, loading, error }] = useLoginMutation();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -21,12 +29,31 @@ export default function Login(props: ILoginProps) {
     const password = convertFormDataEntryValueToString(data.get("password"));
 
     if (username !== "" && password !== "") {
+      login({
+        variables: {
+          input: {
+            email: username,
+            password,
+          },
+        },
+      });
     } else {
       enqueueSnackbar("Please fill all the required fields", {
         variant: "info",
       });
     }
   };
+
+  if (error) {
+    enqueueSnackbar(error?.message, { variant: "error" });
+  }
+
+  if (data! && !auth?.user) {
+    enqueueSnackbar("Logged in successfully", { variant: "success" });
+    auth.login(data!?.login!, () => {
+      navigate(from, { replace: true });
+    });
+  }
 
   return (
     <Layout
