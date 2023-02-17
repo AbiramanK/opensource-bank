@@ -16,6 +16,7 @@ import { DashboardItem, SelectComponent } from "src/components";
 import {
   AccountBalance,
   AccountBalanceWallet,
+  AddCard,
   Group,
   Paid,
   ReceiptLong,
@@ -24,6 +25,7 @@ import { IDashboardItemProps } from "src/components/DashboardItem";
 import { useAuth } from "src/RootRouter";
 import {
   GetBankAccountOutput,
+  useCreateBankAccountMutation,
   useDeopsitMutation,
   useGetBankAccountsLazyQuery,
   useWithdrawMutation,
@@ -74,6 +76,12 @@ export default function Dashboard(props: IDashboardProps) {
             icon: <AccountBalanceWallet sx={{ fontSize: 80 }} />,
             action: (id: string) => handleAction(id),
           },
+          {
+            id: "create_bank_account",
+            title: "Create Bank Account",
+            icon: <AddCard sx={{ fontSize: 80 }} />,
+            action: (id: string) => handleAction(id),
+          },
         ]
       : [
           {
@@ -88,6 +96,7 @@ export default function Dashboard(props: IDashboardProps) {
   const [getBankAccounts, accounts] = useGetBankAccountsLazyQuery();
   const [deposit, depositResult] = useDeopsitMutation();
   const [withdraw, withdrawResult] = useWithdrawMutation();
+  const [createBankAccount, createdResult] = useCreateBankAccountMutation();
 
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [accountSelectOptions, setAccountSelectOptions] =
@@ -150,16 +159,26 @@ export default function Dashboard(props: IDashboardProps) {
     }
   }, [withdrawResult?.data]);
 
+  useEffect(() => {
+    if (createdResult?.data) {
+      getCustomerAccounts(auth?.user?.id!);
+    }
+  }, [createdResult?.data]);
+
   const handleAction = (id: string) => {
     if (id === "deposit") {
       setType("deposit");
+      setDialogOpen(true);
     }
 
     if (id === "withdraw") {
       setType("withdraw");
+      setDialogOpen(true);
     }
 
-    setDialogOpen(true);
+    if (id === "create_bank_account") {
+      createBankAccount();
+    }
   };
 
   const handleDialogClose = () => {
@@ -242,6 +261,17 @@ export default function Dashboard(props: IDashboardProps) {
     handleErrors(withdrawResult?.error?.message);
     enqueueSnackbar(withdrawResult?.error?.message, { variant: "error" });
     withdrawResult?.reset();
+  }
+
+  if (createdResult?.error) {
+    handleErrors(createdResult?.error?.message);
+    enqueueSnackbar(createdResult?.error?.message, { variant: "error" });
+    createdResult?.reset();
+  }
+
+  if (createdResult?.data!) {
+    enqueueSnackbar("Bank account created success", { variant: "success" });
+    createdResult?.reset();
   }
 
   return (
