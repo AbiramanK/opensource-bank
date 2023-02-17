@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import { DataGrid, GridColDef, GridEventListener } from "@mui/x-data-grid";
 
 interface IDataGridTableProps {
-  rows: Array<any>;
+  rows: Array<any> | undefined;
   columns: GridColDef[];
   pageSize: number;
   rowsPerPageOptions: Array<number>;
@@ -33,7 +33,7 @@ export default function DataGridTable(props: IDataGridTableProps) {
     <React.Fragment>
       <Box sx={{ height: props?.tableHeight, width: "100%" }}>
         <DataGrid
-          rows={props?.rows}
+          rows={props?.rows ?? []}
           columns={props?.columns}
           pageSize={pageSize}
           rowsPerPageOptions={props?.rowsPerPageOptions}
