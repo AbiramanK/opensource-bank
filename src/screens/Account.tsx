@@ -8,6 +8,7 @@ import {
 import {
   Chip,
   FormControl,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -21,18 +22,20 @@ import {
   PauseCircle,
 } from "@mui/icons-material";
 
-import { DataGridTable } from "src/components";
+import { DataGridTable, SelectComponent } from "src/components";
 import { AppLayout } from "src/layouts";
 import { useSnackbar } from "notistack";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   AccountModel,
+  useGetAllUsersLazyQuery,
   useGetBankAccountsLazyQuery,
   UserModel,
   useUpdateBankAccountStatusMutation,
 } from "src/graphql-codegen/graphql";
 import { useAuth } from "src/RootRouter";
 import { useApolloClient } from "@apollo/client";
+import { SelectComponentOptionsInterface } from "src/components/SelectComponent";
 
 export type AccountStatusTypes =
   | "pre-active"
@@ -223,11 +226,37 @@ export default function Account(props: IAccountProps) {
 
   const routeState = location?.state as UserModel | null;
 
+  const [customerSelectOptions, setCustomerSelectOptions] =
+    useState<SelectComponentOptionsInterface[]>();
+  const [selectedCustomer, setSelectedCustomer] = useState<string>();
+
   const [getBankAccounts, { data, loading, error }] =
     useGetBankAccountsLazyQuery();
 
   const [updateBankAccountStatus, result] =
     useUpdateBankAccountStatusMutation();
+
+  const [getAllCustomers, customers] = useGetAllUsersLazyQuery();
+
+  useEffect(() => {
+    getAllCustomers();
+  }, []);
+
+  useEffect(() => {
+    if (customers?.data!) {
+      const customerOptions = customers?.data?.get_all_users?.map(
+        (user: UserModel, index: number): SelectComponentOptionsInterface => {
+          return {
+            id: user?.id?.toString(),
+            label: `${user?.id} - ${user?.first_name} ${user?.last_name}`,
+            disabled: false,
+          };
+        }
+      );
+
+      setCustomerSelectOptions(customerOptions);
+    }
+  }, [customers?.data]);
 
   useEffect(() => {
     getCustomerAccounts();
@@ -247,16 +276,20 @@ export default function Account(props: IAccountProps) {
     });
   };
 
-  const getCustomerAccounts = async () => {
-    var userId = undefined;
+  const getCustomerAccounts = async (id?: number) => {
+    var userId = null;
 
-    if (auth?.user?.type === "banker") {
-      userId = routeState?.id;
+    if (auth?.user?.type === "banker" && !id) {
+      userId = routeState?.id ?? null;
+    } else {
+      userId = id ?? null;
     }
 
-    if (auth?.user?.type === "banker" && routeState === null) {
+    if (auth?.user?.type === "banker" && userId === null) {
       return;
     }
+
+    setSelectedCustomer(userId?.toString());
 
     getBankAccounts({
       variables: {
@@ -286,26 +319,48 @@ export default function Account(props: IAccountProps) {
     }
   };
 
+  const handleCustomerSelectChange = (event: SelectChangeEvent) => {
+    getCustomerAccounts(parseInt(event?.target?.value!));
+  };
+
   if (error) {
     handleErrors(error?.message);
-    enqueueSnackbar(error?.message, { variant: "error" });
+    // enqueueSnackbar(error?.message, { variant: "error" });
   }
 
   if (result?.error) {
     handleErrors(result?.error?.message);
-    enqueueSnackbar(result?.error?.message, { variant: "error" });
+    // enqueueSnackbar(result?.error?.message, { variant: "error" });
+  }
+
+  if (customers?.error) {
+    handleErrors(customers?.error?.message);
+    // enqueueSnackbar(result?.error?.message, { variant: "error" });
   }
 
   return (
     <React.Fragment>
       <AppLayout drawerSelected="accounts" title="Accounts">
+        <Grid container sx={{ m: 2 }}>
+          <Grid item xs={12}>
+            <SelectComponent
+              id="customer"
+              label="Customer"
+              options={customerSelectOptions}
+              size="small"
+              value={selectedCustomer}
+              handleChange={handleCustomerSelectChange}
+              minWidth={180}
+            />
+          </Grid>
+        </Grid>
         <DataGridTable
           columns={columns}
           rows={data?.get_bank_accounts}
           disableSelectionOnClick={true}
           newEditingApi={true}
           onRowClick={handleOnRowClickEvent}
-          loading={loading || result?.loading}
+          loading={loading || result?.loading || customers?.loading}
           pageSize={10}
           rowsPerPageOptions={[10, 20]}
           tableHeight={"85vh"}
