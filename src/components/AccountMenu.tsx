@@ -112,13 +112,13 @@ export default function AccountMenu(props: IAccountMenu) {
           <Avatar /> Profile
         </MenuItem>
         <Divider />
-        <MenuItem>
+        <MenuItem disabled>
           <ListItemIcon>
             <PersonAdd fontSize="small" />
           </ListItemIcon>
           Add another account
         </MenuItem>
-        <MenuItem>
+        <MenuItem disabled>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
