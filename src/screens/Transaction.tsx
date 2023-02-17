@@ -150,7 +150,7 @@ export default function Transaction(props: ITransactionProps) {
   };
 
   const handleErrors = (message: string) => {
-    if (message === "jwt expired" || "jwt must be provided") {
+    if (message === "jwt expired" || message === "jwt must be provided") {
       enqueueSnackbar("User session has expired, Please login again.");
 
       logout();

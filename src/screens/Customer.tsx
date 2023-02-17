@@ -108,7 +108,7 @@ export default function Customer(props: ICustomerProps) {
   };
 
   const handleErrors = (message: string) => {
-    if (message === "jwt expired" || "jwt must be provided") {
+    if (message === "jwt expired" || message === "jwt must be provided") {
       enqueueSnackbar("User session has expired, Please login again.");
 
       logout();
