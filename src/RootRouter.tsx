@@ -16,8 +16,22 @@ export default function RootRouter() {
     <AuthProvider>
       <Routes>
         <Route>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/login"
+            element={
+              <CheckAuth>
+                <Login />
+              </CheckAuth>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <CheckAuth>
+                <Register />
+              </CheckAuth>
+            }
+          />
 
           <Route
             path="/"
@@ -102,6 +116,17 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 
   if (!auth.user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+}
+
+function CheckAuth({ children }: { children: JSX.Element }) {
+  let auth = useAuth();
+  let location = useLocation();
+
+  if (auth.user) {
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   return children;
