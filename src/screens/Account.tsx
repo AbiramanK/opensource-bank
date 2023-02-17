@@ -341,19 +341,21 @@ export default function Account(props: IAccountProps) {
   return (
     <React.Fragment>
       <AppLayout drawerSelected="accounts" title="Accounts">
-        <Grid container sx={{ m: 2 }}>
-          <Grid item xs={12}>
-            <SelectComponent
-              id="customer"
-              label="Customer"
-              options={customerSelectOptions}
-              size="small"
-              value={selectedCustomer}
-              handleChange={handleCustomerSelectChange}
-              minWidth={180}
-            />
+        {auth?.user?.type === "banker" && (
+          <Grid container sx={{ m: 2 }}>
+            <Grid item xs={12}>
+              <SelectComponent
+                id="customer"
+                label="Customer"
+                options={customerSelectOptions}
+                size="small"
+                value={selectedCustomer}
+                handleChange={handleCustomerSelectChange}
+                minWidth={180}
+              />
+            </Grid>
           </Grid>
-        </Grid>
+        )}
         <DataGridTable
           columns={columns}
           rows={data?.get_bank_accounts}

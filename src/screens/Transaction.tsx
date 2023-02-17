@@ -149,13 +149,21 @@ export default function Transaction(props: ITransactionProps) {
   const [getAllCustomers, customers] = useGetAllUsersLazyQuery();
 
   useEffect(() => {
-    getAllCustomers();
+    if (auth?.user?.type === "banker") {
+      getAllCustomers();
+    }
 
     if (routeState !== null) {
-      setSelectedCustomer(routeState?.user_id?.toString());
-      setSelectedAccount(routeState?.id?.toString());
-      getCustomerAccounts(routeState?.id);
+      if (auth?.user?.type === "banker") {
+        setSelectedCustomer(routeState?.user_id?.toString());
+        setSelectedAccount(routeState?.user_id?.toString());
+      }
+      getCustomerAccounts(routeState?.user_id);
       getAccountTransactions(routeState?.id!);
+    }
+
+    if (auth?.user?.type === "customer") {
+      getCustomerAccounts(auth?.user?.id);
     }
   }, []);
 
@@ -242,7 +250,10 @@ export default function Transaction(props: ITransactionProps) {
     }
 
     setSelectedCustomer(userId?.toString());
-    setSelectedAccount(undefined);
+
+    if (auth?.user?.type === "banker") {
+      setSelectedAccount(undefined);
+    }
 
     getBankAccounts({
       variables: {
@@ -270,20 +281,22 @@ export default function Transaction(props: ITransactionProps) {
     <React.Fragment>
       <AppLayout drawerSelected="transactions" title="Transactions">
         <Grid container sx={{ m: 2 }}>
+          {auth?.user?.type === "banker" && (
+            <Grid item xs={6}>
+              <SelectComponent
+                id="customer"
+                label="Customer"
+                options={customerSelectOptions}
+                size="small"
+                value={selectedCustomer}
+                handleChange={handleCustomerSelectChange}
+                minWidth={180}
+              />
+            </Grid>
+          )}
           <Grid item xs={6}>
             <SelectComponent
-              id="customer"
-              label="Customer"
-              options={customerSelectOptions}
-              size="small"
-              value={selectedCustomer}
-              handleChange={handleCustomerSelectChange}
-              minWidth={180}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <SelectComponent
-              disabled={!selectedCustomer}
+              disabled={!selectedCustomer && auth?.user?.type === "banker"}
               id="account"
               label="Account"
               options={accountSelectOptions}
