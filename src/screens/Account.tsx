@@ -96,128 +96,84 @@ export const getChipColorAndIconBasedOnAccountStatus = (
   }
 };
 
+const baseColumns: GridColDef[] = [
+  {
+    field: "id",
+    headerName: "ID",
+    width: 50,
+    valueGetter: (params: GridValueGetterParams) => `${params?.row?.id ?? "-"}`,
+  },
+  {
+    field: "customer",
+    headerName: "Customer",
+    width: 150,
+    valueGetter: (params: GridValueGetterParams) =>
+      `${params?.row?.user?.first_name ?? ""} ${
+        params?.row?.user?.last_name ?? ""
+      }`,
+  },
+  {
+    field: "accountNumber",
+    headerName: "Account Number",
+    width: 180,
+    valueGetter: (params: GridValueGetterParams) =>
+      `${params?.row?.accountNumber ?? "-"}`,
+  },
+  {
+    field: "status",
+    headerName: "Status",
+    width: 130,
+    valueGetter: (params: GridValueGetterParams) =>
+      `${params?.row?.status ?? "-"}`,
+    renderCell: (params: GridRenderCellParams) => {
+      const status = params?.row?.status;
+      const result = getChipColorAndIconBasedOnAccountStatus(status);
+      return (
+        <Chip
+          label={status?.toUpperCase()}
+          variant="outlined"
+          color={result?.color}
+          size="small"
+          icon={result?.icon}
+        />
+      );
+    },
+  },
+  {
+    field: "balance",
+    headerName: "Balance",
+    width: 100,
+    valueGetter: (params: GridValueGetterParams) =>
+      `${params?.row?.balance ?? "0"}`,
+    renderCell: (params: GridRenderCellParams) => {
+      return (
+        <React.Fragment>
+          <CurrencyRupee fontSize="small" />
+          <Typography>{params?.row?.balance}</Typography>
+        </React.Fragment>
+      );
+    },
+  },
+  {
+    field: "dailyTransactionLimit",
+    headerName: "Daily Transaction Limit",
+    width: 180,
+    valueGetter: (params: GridValueGetterParams) =>
+      `${params?.row?.dailyTransactionLimit ?? "0"}`,
+    renderCell: (params: GridRenderCellParams) => {
+      return (
+        <React.Fragment>
+          <CurrencyRupee fontSize="small" />
+          <Typography>{params?.row?.dailyTransactionLimit}</Typography>
+        </React.Fragment>
+      );
+    },
+  },
+];
+
 export interface IAccountProps {}
 
 export default function Account(props: IAccountProps) {
-  const columns: GridColDef[] = [
-    {
-      field: "id",
-      headerName: "ID",
-      width: 50,
-      valueGetter: (params: GridValueGetterParams) =>
-        `${params?.row?.id ?? "-"}`,
-    },
-    {
-      field: "customer",
-      headerName: "Customer",
-      width: 150,
-      valueGetter: (params: GridValueGetterParams) =>
-        `${params?.row?.user?.first_name ?? ""} ${
-          params?.row?.user?.last_name ?? ""
-        }`,
-    },
-
-    {
-      field: "accountNumber",
-      headerName: "Account Number",
-      width: 180,
-      valueGetter: (params: GridValueGetterParams) =>
-        `${params?.row?.accountNumber ?? "-"}`,
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 130,
-      valueGetter: (params: GridValueGetterParams) =>
-        `${params?.row?.status ?? "-"}`,
-      renderCell: (params: GridRenderCellParams) => {
-        const status = params?.row?.status;
-        const result = getChipColorAndIconBasedOnAccountStatus(status);
-        return (
-          <Chip
-            label={status?.toUpperCase()}
-            variant="outlined"
-            color={result?.color}
-            size="small"
-            icon={result?.icon}
-          />
-        );
-      },
-    },
-    {
-      field: "balance",
-      headerName: "Balance",
-      width: 100,
-      valueGetter: (params: GridValueGetterParams) =>
-        `${params?.row?.balance ?? "0"}`,
-      renderCell: (params: GridRenderCellParams) => {
-        return (
-          <React.Fragment>
-            <CurrencyRupee fontSize="small" />
-            <Typography>{params?.row?.balance}</Typography>
-          </React.Fragment>
-        );
-      },
-    },
-    {
-      field: "dailyTransactionLimit",
-      headerName: "Daily Transaction Limit",
-      width: 180,
-      valueGetter: (params: GridValueGetterParams) =>
-        `${params?.row?.dailyTransactionLimit ?? "0"}`,
-      renderCell: (params: GridRenderCellParams) => {
-        return (
-          <React.Fragment>
-            <CurrencyRupee fontSize="small" />
-            <Typography>{params?.row?.dailyTransactionLimit}</Typography>
-          </React.Fragment>
-        );
-      },
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      sortable: false,
-      width: 150,
-      renderCell: (params: GridRenderCellParams) => {
-        const selected = params?.row?.status;
-
-        const handleChange = async (event: SelectChangeEvent) => {
-          updateAccountStatus(
-            params?.row?.id,
-            event?.target?.value as AccountStatusTypes
-          );
-        };
-
-        return (
-          <React.Fragment>
-            <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
-              <InputLabel id="update-account-status-select-label">
-                Status
-              </InputLabel>
-              <Select
-                labelId="update-account-status-select-label"
-                id="update-account-status-select"
-                value={selected}
-                label="Status"
-                onChange={handleChange}
-                defaultValue={selected}
-                size="small"
-              >
-                <MenuItem disabled value={"pre-active"}>
-                  pre-active
-                </MenuItem>
-                <MenuItem value={"active"}>active</MenuItem>
-                <MenuItem value={"suspended"}>suspended</MenuItem>
-                <MenuItem value={"closed"}>closed</MenuItem>
-              </Select>
-            </FormControl>
-          </React.Fragment>
-        );
-      },
-    },
-  ];
-
   const { enqueueSnackbar } = useSnackbar();
   const location = useLocation();
   const auth = useAuth();
@@ -225,6 +181,55 @@ export default function Account(props: IAccountProps) {
   const client = useApolloClient();
 
   const routeState = location?.state as UserModel | null;
+
+  const columns: GridColDef[] =
+    auth?.user?.type == "customer"
+      ? baseColumns
+      : [
+          ...baseColumns,
+          {
+            field: "action",
+            headerName: "Action",
+            sortable: false,
+            width: auth?.user?.type === "banker" ? 150 : 0,
+            renderCell: (params: GridRenderCellParams) => {
+              const selected = params?.row?.status;
+
+              const handleChange = async (event: SelectChangeEvent) => {
+                updateAccountStatus(
+                  params?.row?.id,
+                  event?.target?.value as AccountStatusTypes
+                );
+              };
+
+              return (
+                <React.Fragment>
+                  <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
+                    <InputLabel id="update-account-status-select-label">
+                      Status
+                    </InputLabel>
+                    <Select
+                      labelId="update-account-status-select-label"
+                      id="update-account-status-select"
+                      value={selected}
+                      label="Status"
+                      onChange={handleChange}
+                      defaultValue={selected}
+                      size="small"
+                    >
+                      <MenuItem disabled value={"pre-active"}>
+                        pre-active
+                      </MenuItem>
+                      <MenuItem value={"active"}>active</MenuItem>
+                      <MenuItem value={"suspended"}>suspended</MenuItem>
+                      <MenuItem value={"closed"}>closed</MenuItem>
+                    </Select>
+                  </FormControl>
+                </React.Fragment>
+              );
+            },
+          },
+        ];
 
   const [customerSelectOptions, setCustomerSelectOptions] =
     useState<SelectComponentOptionsInterface[]>();
