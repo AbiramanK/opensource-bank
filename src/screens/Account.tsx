@@ -23,6 +23,13 @@ import {
 
 import { DataGridTable } from "src/components";
 import { AppLayout } from "src/layouts";
+import { useSnackbar } from "notistack";
+import { useLocation } from "react-router-dom";
+import {
+  useGetBankAccountsLazyQuery,
+  UserModel,
+} from "src/graphql-codegen/graphql";
+import { useAuth } from "src/RootRouter";
 
 export type AccountStatusTypes =
   | "pre-active"
@@ -82,65 +89,6 @@ export const getChipColorAndIconBasedOnAccountStatus = (
       break;
   }
 };
-
-const rows = [
-  {
-    id: 1,
-    userId: 1,
-    accountNumber: "00000414613772455",
-    status: "closed",
-    dailyTransactionLimit: 10000,
-    balance: 300,
-    createdAt: "2023-02-13T03:55:12.000Z",
-    updatedAt: "2023-02-13T04:24:28.000Z",
-    user: {
-      first_name: "Abiraman",
-      last_name: "K",
-    },
-  },
-  {
-    id: 3,
-    userId: 1,
-    accountNumber: "00000414614495286",
-    status: "active",
-    dailyTransactionLimit: 10000,
-    balance: 0,
-    createdAt: "2023-02-13T11:33:47.000Z",
-    updatedAt: "2023-02-13T11:34:17.000Z",
-    user: {
-      first_name: "Abiraman",
-      last_name: "K",
-    },
-  },
-  {
-    id: 4,
-    userId: 1,
-    accountNumber: "00000414614495287",
-    status: "pre-active",
-    dailyTransactionLimit: 10000,
-    balance: 0,
-    createdAt: "2023-02-13T11:33:47.000Z",
-    updatedAt: "2023-02-13T11:34:17.000Z",
-    user: {
-      first_name: "Abiraman",
-      last_name: "K",
-    },
-  },
-  {
-    id: 5,
-    userId: 1,
-    accountNumber: "00000414614495288",
-    status: "suspended",
-    dailyTransactionLimit: 10000,
-    balance: 0,
-    createdAt: "2023-02-13T11:33:47.000Z",
-    updatedAt: "2023-02-13T11:34:17.000Z",
-    user: {
-      first_name: "Abiraman",
-      last_name: "K",
-    },
-  },
-];
 
 export interface IAccountProps {}
 
@@ -261,8 +209,23 @@ export default function Account(props: IAccountProps) {
     },
   ];
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [accounts, setAccounts] = useState();
+  const { enqueueSnackbar } = useSnackbar();
+  const location = useLocation();
+  const auth = useAuth();
+
+  const {
+    first_name,
+    last_name,
+    email,
+    id,
+    user_name,
+    mobile_number,
+    address,
+    number_of_accounts,
+  } = location?.state as UserModel;
+
+  const [getBankAccounts, { data, loading, error }] =
+    useGetBankAccountsLazyQuery();
 
   useEffect(() => {
     getCustomerAccounts();
@@ -270,16 +233,32 @@ export default function Account(props: IAccountProps) {
 
   const updateAccountStatus = async (status: AccountStatusTypes) => {};
 
-  const getCustomerAccounts = async () => {};
+  const getCustomerAccounts = async () => {
+    var userId = undefined;
+
+    if (auth?.user?.type === "banker") {
+      userId = id;
+    }
+
+    getBankAccounts({
+      variables: {
+        user_id: userId,
+      },
+    });
+  };
 
   const handleOnRowClickEvent = () => {};
+
+  if (error) {
+    enqueueSnackbar(error?.message, { variant: "error" });
+  }
 
   return (
     <React.Fragment>
       <AppLayout drawerSelected="accounts" title="Accounts">
         <DataGridTable
           columns={columns}
-          rows={rows}
+          rows={data?.get_bank_accounts}
           disableSelectionOnClick={true}
           newEditingApi={true}
           onRowClick={handleOnRowClickEvent}
