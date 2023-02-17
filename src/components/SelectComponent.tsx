@@ -21,6 +21,7 @@ export interface ISelectComponentProps {
   label: string;
   size: "small" | "medium";
   minWidth?: number;
+  disabled?: boolean;
 }
 
 export default function SelectComponent(props: ISelectComponentProps) {
@@ -29,6 +30,7 @@ export default function SelectComponent(props: ISelectComponentProps) {
       <FormControl sx={{ m: 0, minWidth: props?.minWidth ?? 120 }} size="small">
         <InputLabel id={`${props?.id}-select-label`}>{props?.label}</InputLabel>
         <Select
+          disabled={props?.disabled ?? false}
           labelId={`${props?.id}-select-label`}
           id={`${props?.id}-select`}
           value={props?.value ?? ""}
