@@ -19,6 +19,7 @@ import {
 
 import { Title } from "../../components";
 import { MuiDrawerNav } from "./MuiDrawerNav";
+import { useAuth, UserType } from "src/RootRouter";
 
 export interface MainListItemInterface {
   id: DrawerItemSelectedType;
@@ -26,6 +27,7 @@ export interface MainListItemInterface {
   link: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  roles: Array<UserType>;
 }
 
 const mainListItems: MainListItemInterface[] = [
@@ -34,24 +36,28 @@ const mainListItems: MainListItemInterface[] = [
     title: "Dashboard",
     link: "/",
     leftIcon: <DashboardIcon />,
+    roles: ["customer", "banker"],
   },
   {
     id: "customers",
     title: "Customers",
     link: "/customers",
     leftIcon: <Group />,
+    roles: ["banker"],
   },
   {
     id: "accounts",
     title: "Accounts",
     link: "/accounts",
     leftIcon: <AccountBalance />,
+    roles: ["customer", "banker"],
   },
   {
     id: "transactions",
     title: "Transactions",
     link: "/transactions",
     leftIcon: <ReceiptLong />,
+    roles: ["customer", "banker"],
   },
 ];
 
@@ -101,6 +107,8 @@ export interface IDrawerNavProps {
 }
 
 export default function DrawerNav(props: IDrawerNavProps) {
+  const auth = useAuth();
+
   return (
     <React.Fragment>
       <MuiDrawerNav
@@ -123,17 +131,21 @@ export default function DrawerNav(props: IDrawerNavProps) {
         </Toolbar>
         <Divider />
         <List component="nav">
-          {mainListItems?.map((item: MainListItemInterface, index: number) => (
-            <DrawerListItem
-              key={index}
-              id={item?.id}
-              title={item?.title}
-              link={item?.link}
-              leftIcon={item?.leftIcon}
-              rightIcon={item?.rightIcon}
-              selected={props?.selcted}
-            />
-          ))}
+          {mainListItems?.map((item: MainListItemInterface, index: number) => {
+            return (
+              item?.roles?.includes(auth?.user?.type as UserType) && (
+                <DrawerListItem
+                  key={index}
+                  id={item?.id}
+                  title={item?.title}
+                  link={item?.link}
+                  leftIcon={item?.leftIcon}
+                  rightIcon={item?.rightIcon}
+                  selected={props?.selcted}
+                />
+              )
+            );
+          })}
         </List>
       </MuiDrawerNav>
     </React.Fragment>

@@ -36,7 +36,7 @@ export default function RootRouter() {
           <Route
             path="/"
             element={
-              <RequireAuth>
+              <RequireAuth roles={["banker", "customer"]}>
                 <Dashboard />
               </RequireAuth>
             }
@@ -44,7 +44,7 @@ export default function RootRouter() {
           <Route
             path="/customers"
             element={
-              <RequireAuth>
+              <RequireAuth roles={["banker"]}>
                 <Customer />
               </RequireAuth>
             }
@@ -52,7 +52,7 @@ export default function RootRouter() {
           <Route
             path="/accounts"
             element={
-              <RequireAuth>
+              <RequireAuth roles={["banker", "customer"]}>
                 <Account />
               </RequireAuth>
             }
@@ -60,7 +60,7 @@ export default function RootRouter() {
           <Route
             path="/transactions"
             element={
-              <RequireAuth>
+              <RequireAuth roles={["banker", "customer"]}>
                 <Transaction />
               </RequireAuth>
             }
@@ -110,7 +110,15 @@ export function useAuth() {
   return React.useContext(AuthContext);
 }
 
-function RequireAuth({ children }: { children: JSX.Element }) {
+export type UserType = "customer" | "banker";
+
+function RequireAuth({
+  roles,
+  children,
+}: {
+  roles: Array<UserType>;
+  children: JSX.Element;
+}) {
   let auth = useAuth();
   let location = useLocation();
 
@@ -118,6 +126,9 @@ function RequireAuth({ children }: { children: JSX.Element }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  if (!roles?.includes(auth?.user?.type! as UserType)) {
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
   return children;
 }
 
