@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   GridColDef,
   GridRenderCellParams,
@@ -9,6 +9,8 @@ import { DataGridTable } from "src/components";
 import { AppLayout } from "src/layouts";
 import { Chip } from "@mui/material";
 import { Cancel, CheckCircle } from "@mui/icons-material";
+import { useGetAllUsersQuery } from "src/graphql-codegen/graphql";
+import { useSnackbar } from "notistack";
 
 const columns: GridColDef[] = [
   {
@@ -109,19 +111,28 @@ const rows = [
 export interface ICustomerProps {}
 
 export default function Customer(props: ICustomerProps) {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [customers, setCustomers] = useState();
+  const { enqueueSnackbar } = useSnackbar();
+
+  const { data, loading, error } = useGetAllUsersQuery();
+
+  useEffect(() => {
+    getCustomers();
+  }, []);
 
   const getCustomers = async () => {};
 
   const handleOnRowClickEvent = () => {};
+
+  if (error) {
+    enqueueSnackbar(error?.message, { variant: "error" });
+  }
 
   return (
     <React.Fragment>
       <AppLayout drawerSelected="customers" title="Customers">
         <DataGridTable
           columns={columns}
-          rows={rows}
+          rows={data?.get_all_users}
           disableSelectionOnClick={true}
           newEditingApi={true}
           onRowClick={handleOnRowClickEvent}
