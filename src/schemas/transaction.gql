@@ -34,68 +34,26 @@ query GetTransactions($accountId: Float!) {
 
 mutation Deopsit($input: TransactionInput!) {
   deposit(input: $input) {
-    account_id
-    amount
-    created_at
-    deleted_at
     id
-    status
+    account_id
     type
+    amount
+    status
+    created_at
     updated_at
-    account {
-      account_number
-      daily_transaction_limit
-      id
-      status
-      user {
-        address
-        created_at
-        deleted_at
-        email
-        first_name
-        id
-        is_active
-        last_name
-        mobile_number
-        number_of_accounts
-        type
-        updated_at
-        user_name
-      }
-    }
+    deleted_at
   }
 }
 
 mutation Withdraw($input: TransactionInput!) {
   withdraw(input: $input) {
-    account_id
-    amount
-    created_at
-    deleted_at
     id
-    status
+    account_id
     type
+    amount
+    status
+    created_at
     updated_at
-    account {
-      account_number
-      daily_transaction_limit
-      id
-      status
-      user {
-        address
-        created_at
-        deleted_at
-        email
-        first_name
-        id
-        is_active
-        last_name
-        mobile_number
-        number_of_accounts
-        type
-        updated_at
-        user_name
-      }
-    }
+    deleted_at
   }
 }
