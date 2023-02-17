@@ -17,6 +17,13 @@ import {
   Pending,
 } from "@mui/icons-material";
 import moment from "moment";
+import {
+  AccountModel,
+  TransactionModel,
+  useGetTransactionsQuery,
+} from "src/graphql-codegen/graphql";
+import { useSnackbar } from "notistack";
+import { useLocation } from "react-router-dom";
 
 const columns: GridColDef[] = [
   {
@@ -109,331 +116,39 @@ const columns: GridColDef[] = [
   },
 ];
 
-const rows = [
-  {
-    id: 1,
-    account_id: 1,
-    type: "deposit",
-    amount: 1000,
-    status: "success",
-    created_at: "2023-02-13T05:49:27.000Z",
-    updated_at: "2023-02-13T05:49:27.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 2,
-    account_id: 1,
-    type: "deposit",
-    amount: 200,
-    status: "pending",
-    created_at: "2023-02-13T05:49:27.000Z",
-    updated_at: "2023-02-13T05:49:27.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 3,
-    account_id: 1,
-    type: "deposit",
-    amount: 100,
-    status: "cancelled",
-    created_at: "2023-02-13T05:50:07.000Z",
-    updated_at: "2023-02-13T05:50:07.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 4,
-    account_id: 1,
-    type: "withdraw",
-    amount: 600,
-    status: "success",
-    created_at: "2023-02-13T05:50:07.000Z",
-    updated_at: "2023-02-13T05:50:07.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 5,
-    account_id: 1,
-    type: "withdraw",
-    amount: 900,
-    status: "pending",
-    created_at: "2023-02-13T06:13:28.000Z",
-    updated_at: "2023-02-13T06:13:28.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 6,
-    account_id: 1,
-    type: "withdraw",
-    amount: 100,
-    status: "cancelled",
-    created_at: "2023-02-13T11:01:26.000Z",
-    updated_at: "2023-02-13T11:01:26.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 7,
-    account_id: 1,
-    type: "deposit",
-    amount: 100,
-    status: "success",
-    created_at: "2023-02-13T11:02:03.000Z",
-    updated_at: "2023-02-13T11:02:03.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 8,
-    account_id: 1,
-    type: "deposit",
-    amount: 100,
-    status: "success",
-    created_at: "2023-02-13T11:02:05.000Z",
-    updated_at: "2023-02-13T11:02:05.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 9,
-    account_id: 1,
-    type: "withdraw",
-    amount: 200,
-    status: "success",
-    created_at: "2023-02-13T11:02:40.000Z",
-    updated_at: "2023-02-13T11:02:40.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 10,
-    account_id: 1,
-    type: "withdraw",
-    amount: 200,
-    status: "success",
-    created_at: "2023-02-13T11:02:47.000Z",
-    updated_at: "2023-02-13T11:02:47.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 11,
-    account_id: 1,
-    type: "withdraw",
-    amount: 20000,
-    status: "cancelled",
-    created_at: "2023-02-13T11:02:53.000Z",
-    updated_at: "2023-02-13T11:02:53.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 12,
-    account_id: 1,
-    type: "withdraw",
-    amount: 2000,
-    status: "cancelled",
-    created_at: "2023-02-13T11:03:00.000Z",
-    updated_at: "2023-02-13T11:03:00.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 13,
-    account_id: 1,
-    type: "withdraw",
-    amount: 200,
-    status: "success",
-    created_at: "2023-02-13T11:03:04.000Z",
-    updated_at: "2023-02-13T11:03:04.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 14,
-    account_id: 1,
-    type: "deposit",
-    amount: 100,
-    status: "success",
-    created_at: "2023-02-13T11:23:37.000Z",
-    updated_at: "2023-02-13T11:23:37.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 15,
-    account_id: 1,
-    type: "withdraw",
-    amount: 100,
-    status: "success",
-    created_at: "2023-02-13T11:24:12.000Z",
-    updated_at: "2023-02-13T11:24:12.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 16,
-    account_id: 1,
-    type: "withdraw",
-    amount: 300,
-    status: "cancelled",
-    created_at: "2023-02-13T11:24:20.000Z",
-    updated_at: "2023-02-13T11:24:20.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 17,
-    account_id: 1,
-    type: "deposit",
-    amount: 100,
-    status: "success",
-    created_at: "2023-02-13T11:29:53.000Z",
-    updated_at: "2023-02-13T11:29:53.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-  {
-    id: 18,
-    account_id: 1,
-    type: "deposit",
-    amount: 100,
-    status: "success",
-    created_at: "2023-02-13T11:32:07.000Z",
-    updated_at: "2023-02-13T11:32:07.000Z",
-    deleted_at: null,
-    account: {
-      account_number: "00000414613772455",
-      user: {
-        first_name: "Abiraman",
-        last_name: "K",
-      },
-    },
-  },
-];
-
 export interface ITransactionProps {}
 
 export default function Transaction(props: ITransactionProps) {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [transactions, setTransactions] = useState();
+  const { enqueueSnackbar } = useSnackbar();
+  const location = useLocation();
 
-  const getTransactions = async () => {};
+  const {
+    id,
+    account_number,
+    daily_transaction_limit,
+    status,
+    user,
+    created_at,
+  } = location?.state as AccountModel;
 
-  const handleOnRowClickEvent = () => {};
+  const { data, loading, error } = useGetTransactionsQuery({
+    variables: {
+      accountId: id,
+    },
+  });
+
+  const handleOnRowClickEvent = (row: TransactionModel) => {};
+
+  if (error) {
+    enqueueSnackbar(error?.message, { variant: "error" });
+  }
 
   return (
     <React.Fragment>
       <AppLayout drawerSelected="transactions" title="Transactions">
         <DataGridTable
           columns={columns}
-          rows={rows}
+          rows={data?.get_transactions}
           disableSelectionOnClick={true}
           newEditingApi={true}
           onRowClick={handleOnRowClickEvent}

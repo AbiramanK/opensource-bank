@@ -24,8 +24,9 @@ import {
 import { DataGridTable } from "src/components";
 import { AppLayout } from "src/layouts";
 import { useSnackbar } from "notistack";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
+  AccountModel,
   useGetBankAccountsLazyQuery,
   UserModel,
 } from "src/graphql-codegen/graphql";
@@ -212,6 +213,7 @@ export default function Account(props: IAccountProps) {
   const { enqueueSnackbar } = useSnackbar();
   const location = useLocation();
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const {
     first_name,
@@ -247,7 +249,13 @@ export default function Account(props: IAccountProps) {
     });
   };
 
-  const handleOnRowClickEvent = () => {};
+  const handleOnRowClickEvent = (row: AccountModel) => {
+    navigate("/transactions", {
+      state: {
+        ...row,
+      },
+    });
+  };
 
   if (error) {
     enqueueSnackbar(error?.message, { variant: "error" });
