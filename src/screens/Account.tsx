@@ -29,6 +29,7 @@ import {
   AccountModel,
   useGetBankAccountsLazyQuery,
   UserModel,
+  useUpdateBankAccountStatusMutation,
 } from "src/graphql-codegen/graphql";
 import { useAuth } from "src/RootRouter";
 
@@ -178,7 +179,10 @@ export default function Account(props: IAccountProps) {
         const selected = params?.row?.status;
 
         const handleChange = async (event: SelectChangeEvent) => {
-          updateAccountStatus(event?.target?.value as AccountStatusTypes);
+          updateAccountStatus(
+            params?.row?.id,
+            event?.target?.value as AccountStatusTypes
+          );
         };
 
         return (
@@ -229,11 +233,26 @@ export default function Account(props: IAccountProps) {
   const [getBankAccounts, { data, loading, error }] =
     useGetBankAccountsLazyQuery();
 
+  const [updateBankAccountStatus, result] =
+    useUpdateBankAccountStatusMutation();
+
   useEffect(() => {
     getCustomerAccounts();
-  }, []);
+  }, [result?.data]);
 
-  const updateAccountStatus = async (status: AccountStatusTypes) => {};
+  const updateAccountStatus = async (
+    account_id: number,
+    status: AccountStatusTypes
+  ) => {
+    updateBankAccountStatus({
+      variables: {
+        input: {
+          account_id,
+          status,
+        },
+      },
+    });
+  };
 
   const getCustomerAccounts = async () => {
     var userId = undefined;
@@ -261,6 +280,10 @@ export default function Account(props: IAccountProps) {
     enqueueSnackbar(error?.message, { variant: "error" });
   }
 
+  if (result?.error) {
+    enqueueSnackbar(result?.error?.message, { variant: "error" });
+  }
+
   return (
     <React.Fragment>
       <AppLayout drawerSelected="accounts" title="Accounts">
@@ -270,7 +293,7 @@ export default function Account(props: IAccountProps) {
           disableSelectionOnClick={true}
           newEditingApi={true}
           onRowClick={handleOnRowClickEvent}
-          loading={loading}
+          loading={loading || result?.loading}
           pageSize={10}
           rowsPerPageOptions={[10, 20]}
           tableHeight={"85vh"}
