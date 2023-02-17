@@ -22,14 +22,20 @@ export interface ISelectComponentProps {
   size: "small" | "medium";
   minWidth?: number;
   disabled?: boolean;
+  required?: boolean;
 }
 
 export default function SelectComponent(props: ISelectComponentProps) {
   return (
     <React.Fragment>
-      <FormControl sx={{ m: 0, minWidth: props?.minWidth ?? 120 }} size="small">
+      <FormControl
+        sx={{ m: 0, minWidth: props?.minWidth ?? 120 }}
+        size="small"
+        required={props?.required ?? false}
+      >
         <InputLabel id={`${props?.id}-select-label`}>{props?.label}</InputLabel>
         <Select
+          required={props?.required ?? false}
           disabled={props?.disabled ?? false}
           labelId={`${props?.id}-select-label`}
           id={`${props?.id}-select`}
