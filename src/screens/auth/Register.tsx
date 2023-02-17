@@ -6,6 +6,11 @@ import {
   Link,
   Grid,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 
@@ -18,6 +23,11 @@ export default function Register(props: IRegisterProps) {
   const { enqueueSnackbar } = useSnackbar();
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [designation, setDesignation] = React.useState("");
+
+  const handleDesignationChange = (event: SelectChangeEvent) => {
+    setDesignation(event.target.value as string);
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,13 +39,17 @@ export default function Register(props: IRegisterProps) {
     const username = convertFormDataEntryValueToString(data.get("userName"));
     const email = convertFormDataEntryValueToString(data.get("email"));
     const password = convertFormDataEntryValueToString(data.get("password"));
+    const designation = convertFormDataEntryValueToString(
+      data.get("designation")
+    );
 
     if (
       firstName !== "" &&
       lastName !== "" &&
       username !== "" &&
       email !== "" &&
-      password !== ""
+      password !== "" &&
+      designation !== ""
     ) {
     } else {
       enqueueSnackbar("Please fill all the required fields", {
@@ -105,6 +119,23 @@ export default function Register(props: IRegisterProps) {
             id="password"
             autoComplete="new-password"
           />
+        </Grid>
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <InputLabel id="designation-label">Designnation *</InputLabel>
+            <Select
+              required
+              labelId="designation-label"
+              id="designation"
+              value={designation}
+              label="Designation"
+              name="designation"
+              onChange={handleDesignationChange}
+            >
+              <MenuItem value={"customer"}>Customer</MenuItem>
+              <MenuItem value={"banker"}>Banker</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
         <Grid item xs={12}>
           <FormControlLabel
