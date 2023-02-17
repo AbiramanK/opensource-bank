@@ -1,6 +1,9 @@
+import { useApolloClient } from "@apollo/client";
 import React, { useState, Suspense, lazy } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { DrawerItemSelectedType } from "./DrawerNav";
+import { useAuth } from "src/RootRouter";
 
 const ApplicationBar = lazy(() => import("src/layouts/ApplicationBar"));
 const BaseLayout = lazy(() => import("src/layouts/BaseLayout"));
@@ -16,13 +19,20 @@ export interface IAppLayoutProps {
 }
 
 export default function AppLayout(props: IAppLayoutProps) {
+  const client = useApolloClient();
+  const auth = useAuth();
+  const navigate = useNavigate();
+
   const [open, setOpen] = useState<boolean>(true);
 
   const toggleDrawer = () => {
     setOpen(!open);
   };
 
-  const logout = () => {};
+  const logout = () => {
+    client?.clearStore();
+    auth?.logout(() => navigate("/login"));
+  };
 
   return (
     <React.Fragment>
