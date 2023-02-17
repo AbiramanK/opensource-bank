@@ -1,5 +1,5 @@
 import { useApolloClient } from "@apollo/client";
-import React, { useState, Suspense, lazy } from "react";
+import React, { useState, Suspense, lazy, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { DrawerItemSelectedType } from "./DrawerNav";
@@ -24,6 +24,13 @@ export default function AppLayout(props: IAppLayoutProps) {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState<boolean>(true);
+  const [firstName, setFirstName] = useState<string>();
+  const [lastName, setLastName] = useState<string>();
+
+  useEffect(() => {
+    setFirstName(auth?.user?.firstName ?? "");
+    setLastName(auth?.user?.lastName ?? "");
+  }, [auth?.user]);
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -43,8 +50,8 @@ export default function AppLayout(props: IAppLayoutProps) {
             drawerWidth={drawerWidth}
             toggleDrawer={toggleDrawer}
             logout={logout}
-            firstName={"FirstName"}
-            lastName={"LastName"}
+            firstName={firstName}
+            lastName={lastName}
             title={props?.title}
           />
           <DrawerNav
