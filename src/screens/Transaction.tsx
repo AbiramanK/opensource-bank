@@ -1,15 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   GridColDef,
   GridRenderCellParams,
   GridValueGetterParams,
 } from "@mui/x-data-grid";
 
-import { DataGridTable } from "src/components";
+import { DataGridTable, SelectComponent } from "src/components";
 import { AppLayout } from "src/layouts";
-import { Chip } from "@mui/material";
+import { Chip, Grid, SelectChangeEvent } from "@mui/material";
 import {
-  AccountBalance,
   AccountBalanceWallet,
   Cancel,
   CheckCircle,
@@ -20,13 +19,17 @@ import moment from "moment";
 import {
   AccountModel,
   TransactionModel,
+  useGetAllUsersLazyQuery,
+  useGetBankAccountsLazyQuery,
   useGetTransactionsLazyQuery,
-  useGetTransactionsQuery,
+  UserModel,
+  GetBankAccountOutput,
 } from "src/graphql-codegen/graphql";
 import { useSnackbar } from "notistack";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useApolloClient } from "@apollo/client";
 import { useAuth } from "src/RootRouter";
+import { SelectComponentOptionsInterface } from "src/components/SelectComponent";
 
 const columns: GridColDef[] = [
   {
@@ -130,18 +133,77 @@ export default function Transaction(props: ITransactionProps) {
 
   const routeState = location?.state as AccountModel;
 
-  useEffect(() => {
-    if (routeState !== null) {
-      getTransactions({
-        variables: {
-          accountId: routeState?.id,
-        },
-      });
-    }
-  });
+  const [selectedCustomer, setSelectedCustomer] = useState<string>();
+  const [customerSelectOptions, setCustomerSelectOptions] =
+    useState<SelectComponentOptionsInterface[]>();
+
+  const [selectedAccount, setSelectedAccount] = useState<string>();
+  const [accountSelectOptions, setAccountSelectOptions] =
+    useState<SelectComponentOptionsInterface[]>();
 
   const [getTransactions, { data, loading, error }] =
     useGetTransactionsLazyQuery();
+
+  const [getBankAccounts, bankAccounts] = useGetBankAccountsLazyQuery();
+
+  const [getAllCustomers, customers] = useGetAllUsersLazyQuery();
+
+  useEffect(() => {
+    getAllCustomers();
+
+    if (routeState !== null) {
+      setSelectedCustomer(routeState?.user_id?.toString());
+      setSelectedAccount(routeState?.id?.toString());
+      getCustomerAccounts(routeState?.id);
+      getAccountTransactions(routeState?.id!);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (customers?.data) {
+      const customerOptions = customers?.data?.get_all_users?.map(
+        (user: UserModel, index: number): SelectComponentOptionsInterface => {
+          return {
+            id: user?.id?.toString(),
+            label: `${user?.id} - ${user?.first_name} ${user?.last_name}`,
+            disabled: false,
+          };
+        }
+      );
+
+      setCustomerSelectOptions(customerOptions);
+    }
+  }, [customers?.data]);
+
+  useEffect(() => {
+    if (bankAccounts?.data) {
+      const accountOptions = bankAccounts?.data?.get_bank_accounts?.map(
+        (account: GetBankAccountOutput, index: number) => {
+          return {
+            id: account?.id?.toString(),
+            label: `${account?.id} - ${account?.accountNumber}`,
+            disabled: false,
+          };
+        }
+      );
+
+      setAccountSelectOptions(accountOptions);
+    } else {
+      setAccountSelectOptions([]);
+    }
+  }, [bankAccounts?.data]);
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      getCustomerAccounts(parseInt(selectedCustomer!));
+    }
+  }, [selectedCustomer]);
+
+  useEffect(() => {
+    if (selectedAccount) {
+      getAccountTransactions(parseInt(selectedAccount!));
+    }
+  }, [selectedAccount]);
 
   const handleOnRowClickEvent = (row: TransactionModel) => {};
 
@@ -158,17 +220,83 @@ export default function Transaction(props: ITransactionProps) {
     }
   };
 
+  const handleCustomerSelectChange = (event: SelectChangeEvent) => {
+    getCustomerAccounts(parseInt(event?.target?.value!));
+  };
+
+  const handleAccountSelectChange = (event: SelectChangeEvent) => {
+    getAccountTransactions(parseInt(event?.target?.value!));
+  };
+
+  const getCustomerAccounts = (id?: number) => {
+    var userId = null;
+
+    if (auth?.user?.type === "banker" && !id) {
+      userId = routeState?.id ?? null;
+    } else {
+      userId = id ?? null;
+    }
+
+    if (auth?.user?.type === "banker" && userId === null) {
+      return;
+    }
+
+    setSelectedCustomer(userId?.toString());
+    setSelectedAccount(undefined);
+
+    getBankAccounts({
+      variables: {
+        user_id: userId,
+      },
+    });
+  };
+
+  const getAccountTransactions = (id: number) => {
+    setSelectedAccount(id?.toString());
+
+    getTransactions({
+      variables: {
+        accountId: id,
+      },
+    });
+  };
+
   if (error) {
     handleErrors(error?.message);
-    enqueueSnackbar(error?.message, { variant: "error" });
+    // enqueueSnackbar(error?.message, { variant: "error" });
   }
 
   return (
     <React.Fragment>
       <AppLayout drawerSelected="transactions" title="Transactions">
+        <Grid container sx={{ m: 2 }}>
+          <Grid item xs={6}>
+            <SelectComponent
+              id="customer"
+              label="Customer"
+              options={customerSelectOptions}
+              size="small"
+              value={selectedCustomer}
+              handleChange={handleCustomerSelectChange}
+              minWidth={180}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <SelectComponent
+              disabled={!selectedCustomer}
+              id="account"
+              label="Account"
+              options={accountSelectOptions}
+              size="small"
+              value={selectedAccount}
+              handleChange={handleAccountSelectChange}
+              minWidth={180}
+            />
+          </Grid>
+        </Grid>
         <DataGridTable
           columns={columns}
-          rows={data?.get_transactions}
+          rows={selectedAccount ? data?.get_transactions : []}
           disableSelectionOnClick={true}
           newEditingApi={true}
           onRowClick={handleOnRowClickEvent}
